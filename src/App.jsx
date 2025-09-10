@@ -1,10 +1,10 @@
-import { useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import './App.css'
 
 
 function App() {
-  const API = "https://swapi.info/api/films//"
+  const API = "https://swapi.info/api/films"
   const [films, setFilms] = useState([])
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null)
@@ -12,7 +12,8 @@ function App() {
 
   const intervalRef = useRef(null);
 
-  async function fetchData(){
+
+  const fetchData =useCallback(async () =>{
     setIsLoading(true);
     setError(null);
 
@@ -35,10 +36,7 @@ function App() {
 
       setFilms(filmsdata);
 
-      //added setTimout just for the cosmetics
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 1500);
+      setIsLoading(false);
     }
     catch(err){
       console.log(err);
@@ -52,7 +50,12 @@ function App() {
         }, 5000);
       }
     }
-  }
+  },[]);
+
+  useEffect( () => {
+    fetchData();
+  }, [fetchData])
+  
 
   function cancelRetry() {
     if (intervalRef.current) {
