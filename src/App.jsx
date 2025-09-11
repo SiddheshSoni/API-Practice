@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import './App.css'
+import InputForm from './component/Form/InputForm';
 
 
 function App() {
@@ -68,6 +69,7 @@ function App() {
 
   return (
     <>
+      <InputForm/>
       <button onClick={fetchData}>Fetch</button>
       <div>
           {isLoading && <span>Loading...</span>}
@@ -88,3 +90,4 @@ function App() {
 }
 
 export default App
+ //title open relese
