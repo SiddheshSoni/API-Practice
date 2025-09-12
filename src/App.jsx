@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-
 import './App.css'
 import InputForm from './component/Form/InputForm';
 
 
+
 function App() {
-  const API = "https://swapi.info/api/films"
+  const API_BASE = "https://moviedata-9a9ab-default-rtdb.asia-southeast1.firebasedatabase.app/movies"
   const [films, setFilms] = useState([])
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null)
@@ -13,13 +13,32 @@ function App() {
 
   const intervalRef = useRef(null);
 
+  
+  async function addMovieHandler(newFilm){
+        try{
+            const response = await fetch(`${API_BASE}.json`, {
+                method:'POST',
+                body:JSON.stringify(newFilm),
+                headers:{
+                    'Content-Type': 'application/json'
+                }
+            });
+            const data = await response.json();
+            console.log(data);
+        }
+        catch(err){
+            console.log(err);
+        }
+        fetchData();
+  };
 
-  const fetchData =useCallback(async () =>{
+
+  const fetchData = useCallback(async () =>{
     setIsLoading(true);
     setError(null);
 
     try{
-      const res = await fetch(API);
+      const res = await fetch(`${API_BASE}.json`);
       
       if(!res.ok){
         throw new Error("Something Went Wrong!!")
@@ -29,13 +48,31 @@ function App() {
         clearInterval(intervalRef);
         setIsRetrying(false);
       }
+
       const data = await res.json();
 
-      const filmsdata = data.map((film) => (
-        <div key={film.url}>{film.title}</div>
-        ));
+      const loadedMovies=[];
 
-      setFilms(filmsdata);
+      for(const key in data){
+        loadedMovies.push({
+          id:key,
+          title:data[key].title,
+          release:data[key].release,
+          opening:data[key].opening,
+        })
+      }
+      console.log(loadedMovies);
+      
+      // const filmsdata = loadedMovies.map((film) => {
+      //   return {
+      //     id:film.id,
+      //     title:film.title,
+      //     opening:film.opening,
+      //     release:film.release
+      //   }
+      // });
+      // The loadedMovies array is already in the correct shape.
+      setFilms(loadedMovies);
 
       setIsLoading(false);
     }
@@ -67,9 +104,23 @@ function App() {
     setError("Retrying cancelled by user.");
   }
 
+  async function deleteEntryHandler(id){
+    try {
+      await fetch(`${API_BASE}/${id}.json`, {
+        method:"DELETE",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      fetchData(); // Re-fetch movies to update the list
+    } catch (err) {
+      console.error("Failed to delete movie:", err);
+      setError("Failed to delete movie.");
+    }
+  }
   return (
     <>
-      <InputForm/>
+      <InputForm addMovie={addMovieHandler}/>
       <button onClick={fetchData}>Fetch</button>
       <div>
           {isLoading && <span>Loading...</span>}
@@ -82,7 +133,15 @@ function App() {
       )}
       </div>
       <div>
-        {!isLoading && films}
+        {!isLoading && films.length > 0 && films.map((film) => (
+          <div key={film.id}>
+            {film.title}----
+            {film.opening}----
+            {film.release}---
+            <button onClick={() => deleteEntryHandler(film.id)}>Delete</button>
+          </div>
+        ))}
+        {!isLoading && films.length === 0 && !error && <p>No movies found.</p>}
         {error}
       </div>
     </>

@@ -1,9 +1,9 @@
-import React, { useContext } from 'react'
+import React from 'react'
 import Input from './Input';
-import MovieContext from '../store/MovieContext';
 
-const InputForm = () => {
-    const movieCtxt = useContext(MovieContext);
+
+const InputForm = (props) => {
+    
 
     function FormHandler(e){
         e.preventDefault();
@@ -13,7 +13,8 @@ const InputForm = () => {
             release : e.target.release.value,
         }
         console.log(inputData);
-        movieCtxt.addMovie(inputData);
+        props.addMovie(inputData);
+        e.target.reset();
     }
     return <>
         <form onSubmit={FormHandler}>
